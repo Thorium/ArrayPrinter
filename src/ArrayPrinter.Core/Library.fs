@@ -5,6 +5,7 @@ open System.Text
 
 [<AutoOpen>]
 module Core =
+  [<Struct>]
   type NumberType =
     | Hex
     | HexLower
