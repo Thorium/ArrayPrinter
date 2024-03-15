@@ -5,7 +5,7 @@
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>ArrayPrinter</PackageId>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Authors>Christian Steinert</Authors>
     <Product>ArrayPrinter</Product>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
