@@ -20,6 +20,7 @@ type PrinterOptions =
     NumberFormat : NumberType
     RowWidth : byte
     DataPlaceholderChar : char
+    MaxLength : int64
   }
   
   static member defaults = 
@@ -29,6 +30,7 @@ type PrinterOptions =
       NumberFormat = Hex
       RowWidth = 16uy
       DataPlaceholderChar = '.'
+      MaxLength = 0L
     }
     
   static member binaryDefaults =
@@ -38,6 +40,7 @@ type PrinterOptions =
       NumberFormat = Binary
       RowWidth = 4uy
       DataPlaceholderChar = '.'
+      MaxLength = 0L
     }
 
   static member decimalDefaults =
@@ -47,6 +50,7 @@ type PrinterOptions =
       NumberFormat = Decimal
       RowWidth = 10uy
       DataPlaceholderChar = '.'
+      MaxLength = 0L
     }
 
   static member ocalDefaults =
@@ -56,9 +60,10 @@ type PrinterOptions =
       NumberFormat = Octal
       RowWidth = 8uy
       DataPlaceholderChar = '.'
+      MaxLength = 0L
     }
 
-let private formatHeaderNumber format (value : int) =
+let private formatHeaderNumber format (value : int64) =
   match format with
   | Hex -> value.ToString("X4")
   | HexLower -> value.ToString("x4")
@@ -101,20 +106,24 @@ let private emptyCell =
 let printArray (options : PrinterOptions) (bytes : byte array) =
   let builder = new StringBuilder ()
 
-  for row in [0..bytes.Length / (int options.RowWidth)] do
+  let maxLength = 
+    if options.MaxLength = 0L || bytes.LongLength < options.MaxLength then bytes.LongLength
+    else options.MaxLength
+
+  for row in [0L..maxLength / (int64 options.RowWidth)] do
     if options.WithHeader 
     then 
-      (row * int options.RowWidth) |> formatHeaderNumber options.NumberFormat
+      (row * int64 options.RowWidth) |> formatHeaderNumber options.NumberFormat
       |> builder.Append |> ignore
       // After Row Header Padding
       builder.Append " " |> ignore
       
-    for col in [0..(int options.RowWidth - 1)] do
+    for col in [0L..(int64 options.RowWidth - 1L)] do
       // Before Cell Padding
       builder.Append " " |> ignore
-      let i = row * (int options.RowWidth) + col
-      if i >= bytes.Length then emptyCell options.NumberFormat
-      else bytes.[i] |> formatNumber options.NumberFormat
+      let i = row * (int64 options.RowWidth) + col
+      if i >= maxLength then emptyCell options.NumberFormat
+      else bytes.GetValue i :?> byte |> formatNumber options.NumberFormat
       |> builder.Append
       |> ignore
 
@@ -122,12 +131,12 @@ let printArray (options : PrinterOptions) (bytes : byte array) =
     if options.WithData then
       // Before Data Padding
       builder.Append "  " |> ignore
-      for col in [0..(int options.RowWidth - 1)] do
-        let i = row * (int options.RowWidth) + col
+      for col in [0L..(int64 options.RowWidth - 1L)] do
+        let i = row * (int64 options.RowWidth) + col
         (
-          if i >= bytes.Length then ' '
+          if i >= maxLength then ' '
           else 
-            let c = bytes.[i] |> int |> char
+            let c = bytes.GetValue i :?> byte |> int |> char
             if Char.IsLetterOrDigit c || Char.IsPunctuation c then c else options.DataPlaceholderChar
         )
         |> builder.Append
