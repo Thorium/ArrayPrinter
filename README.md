@@ -91,3 +91,6 @@ Bind the binary to (for instance) `ap` and you could do something like this:
 0100  74 73 0D 0A 20 20 20 20 7C 3E 20 70 72 69 6E 74  ts.........print
 0110  66 6E 20 22 25 73 22 0D 0A 20 20 20 20 30 0D 0A  fn."%s"......0..
 ```
+
+...or with Windows Powershell:
+`Get-Content c:\myfile.dat | dotnet run`
